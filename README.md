@@ -227,7 +227,6 @@ On a real cluster you should probably not use `wait()`, unless you know queue ti
 
 ---
 ```
-
              _____
           .-'.  ':'-.
         .''::: .:    '.

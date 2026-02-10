@@ -198,7 +198,7 @@ class Plan:
             if isinstance(node, Step):
                 params: dict[str, Any] = node._to_submitit_dict()
                 if "slurm_job_name" not in params:
-                    params["slurm_job_name"] = self.name
+                    params["slurm_job_name"] = node.name
                 if parent_ids:
                     dep_str: str = f"afterok:{':'.join(parent_ids)}"
                     params.setdefault("slurm_additional_parameters", {})["dependency"] = dep_str
