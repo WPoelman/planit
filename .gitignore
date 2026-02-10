@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.ruff_cache/
+py.typed
+
+# Virtual environments
+.venv/
+.python-version
+
+# example SLURM logs
+slurm_logs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
