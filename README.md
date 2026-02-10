@@ -47,10 +47,10 @@ plan.submit(executor)
 
 ```
 Plan: experiment
-└── ▼ Chain
+└── ▼ Chain [5:00:00]
     ├── ● download [01:00:00]
     ├── ● preprocess [01:00:00]
-    ├── ⇉ Parallel
+    ├── ⇉ Parallel [2:00:00]
     │   ├── ● train_model_a [02:00:00]
     │   └── ● train_model_b [02:00:00]
     └── ● evaluate [01:00:00]
@@ -114,18 +114,18 @@ If we assume `CPU` takes 1 hour and `GPU` 2, this generates the following DAG wi
 
 ```
 Plan: thesis
-└── ▼ Chain
+└── ▼ Chain [8:00:00]
     ├── ● download_data [01:00:00]
-    ├── ⇉ Parallel
-    │   ├── ▼ Chain
+    ├── ⇉ Parallel [5:00:00]
+    │   ├── ▼ Chain [5:00:00]
     │   │   ├── ● preprocess_en [01:00:00]
-    │   │   └── ⇉ Parallel
+    │   │   └── ⇉ Parallel [4:00:00]
     │   │       ├── ● train_bert [02:00:00]
     │   │       ├── ● train_roberta [02:00:00]
-    │   │       └── ▼ Chain
+    │   │       └── ▼ Chain [4:00:00]
     │   │           ├── ● hyperparam_search [02:00:00]
     │   │           └── ● train_xlm-r [02:00:00]
-    │   └── ▼ Chain
+    │   └── ▼ Chain [3:00:00]
     │       ├── ● preprocess_nl [01:00:00]
     │       └── ● train_nl [02:00:00]
     ├── ● evaluate_all [01:00:00]

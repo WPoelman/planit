@@ -179,11 +179,11 @@ class Plan:
         if isinstance(node, Step):
             logger.info(f"{prefix}{marker}● {node.name} [{node._get_time()}]")
         elif isinstance(node, Parallel):
-            logger.info(f"{prefix}{marker}⇉ Parallel")
+            logger.info(f"{prefix}{marker}⇉ Parallel [{node.get_duration()}]")
             for i, n in enumerate(node.nodes):
                 self._print_recursive(n, child_prefix, i == len(node.nodes) - 1)
         elif isinstance(node, Chain):
-            logger.info(f"{prefix}{marker}▼ Chain")
+            logger.info(f"{prefix}{marker}▼ Chain [{node.get_duration()}]")
             for i, n in enumerate(node.nodes):
                 self._print_recursive(n, child_prefix, i == len(node.nodes) - 1)
 
