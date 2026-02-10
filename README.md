@@ -224,3 +224,19 @@ plan.wait()  # blocks until done, runs parallel branches concurrently
 
 `wait()` walks the DAG structure using threads so parallel branches execute concurrently, mirroring real cluster behavior. This is intended for debugging and short jobs. 
 On a real cluster you should probably not use `wait()`, unless you know queue times and job durations will be short.
+
+---
+```
+
+             _____
+          .-'.  ':'-.
+        .''::: .:    '.
+       /   :::::'      \
+      ;.    ':' `       ;
+      |       '..       |
+      ; '      ::::.    ;
+       \       '::::   /
+        '.      :::  .'
+jgs        '-.___'_.-'
+```
+Credit: https://www.asciiart.eu/art/a5e06526e7b3ae4b
