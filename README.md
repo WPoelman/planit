@@ -134,10 +134,10 @@ Time Estimate (not taking queuing into account): 8:00:00
 ```
 
 The 8 hours is the critical path:
-* `download_data` (1h) + 
+* `download_data` (1h) +
 * slowest parallel branch (`preprocess_en` 1h + `hyperparam_search` 2h + `train_xlm-r` 2h = 5h) +
 * `evaluate_all` (1h) +
-* `generate_plots` (1h) 
+* `generate_plots` (1h)
 * = 8h
 
 This is of course without any potential queue time or jobs finishing early.
@@ -209,7 +209,7 @@ Step("train", train_fn, args)
 planit only uses `afterok` dependencies: a job only starts if **all** its parents succeeded. If a job fails, SLURM automatically cancels all downstream dependents.
 
 Communication between jobs is expected to happen through the **filesystem**.
-For example, one step writes a checkpoint file and the next step reads it. 
+For example, one step writes a checkpoint file and the next step reads it.
 planit does not pass return values between steps; it only manages the dependency graph, slurm args, and submission.
 
 ## Debugging locally
@@ -222,7 +222,7 @@ plan.submit(executor)
 plan.wait()  # blocks until done, runs parallel branches concurrently
 ```
 
-`wait()` walks the DAG structure using threads so parallel branches execute concurrently, mirroring real cluster behavior. This is intended for debugging and short jobs. 
+`wait()` walks the DAG structure using threads so parallel branches execute concurrently, mirroring real cluster behavior. This is intended for debugging and short jobs.
 On a real cluster you should probably not use `wait()`, unless you know queue times and job durations will be short.
 
 ---
