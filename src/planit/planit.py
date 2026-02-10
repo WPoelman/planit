@@ -279,5 +279,7 @@ def _parse_slurm_time(time_str: str) -> datetime.timedelta:
         elif time_str.count(":") == 1:
             t = datetime.datetime.strptime(time_str, "%M:%S")
             return datetime.timedelta(minutes=t.minute, seconds=t.second)
+        else:
+            raise ValueError("Unknown time format.")
     except ValueError as e:
         raise ValueError(f"Could not parse time '{time_str}'.\n{e}")

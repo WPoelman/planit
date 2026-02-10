@@ -5,7 +5,7 @@ from collections.abc import Iterable
 
 import submitit
 
-from planit import Parallel, Plan, Chain, SlurmArgs, Step
+from planit import Chain, Parallel, Plan, SlurmArgs, Step
 
 # Submitit logs to a generic "" logger, this is not great, so it's filtered out
 # like this. This doesn't matter for the functionality, but you could do
@@ -41,7 +41,7 @@ def param_search(model_type: str):
 
 def plot_results(models: Iterable[str]):
     for model in models:
-        logger.info(f"{model} is done")
+        logger.info(f"Generating plots for {model}")
 
 
 steps = Chain(
