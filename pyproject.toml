@@ -1,7 +1,7 @@
 [project]
 name = "planit"
 version = "0.1.0"
-description = "Declaratively build workflow DAGs for SLURM clusters"
+description = "Declaratively build workflow DAGs for SLURM clusters."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -15,15 +15,17 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = [
-    "submitit>=1.5.4",
-]
+dependencies = ["submitit>=1.5.4"]
 
 [project.urls]
 Repository = "https://github.com/WPoelman/planit"
 
 [dependency-groups]
 dev = [
+    "pytest>=8.0",
     "ruff>=0.15.0",
     "ty>=0.0.15",
 ]
+
+[tool.ruff]
+line-length = 120
