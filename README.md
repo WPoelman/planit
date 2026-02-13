@@ -164,7 +164,7 @@ args = SlurmArgs(
 )
 ```
 
-This is tailored to my own work on the [VSC](https://www.vscentrum.be/) and may not cover all configurations (see the [next section](#raw-dict)) for an alternative).
+This is tailored to my own work on the [VSC](https://www.vscentrum.be/) and may not cover all the configurations you might need on your cluster (see the [next section](#raw-dict) for an alternative).
 CPU and GPU configurations I regularly use on the VSC are included in [example_vsc_args.py](example_vsc_args.py).
 
 Available fields:
@@ -196,7 +196,7 @@ args = {
     "slurm_partition": "gpu_v100",
     "gpus_per_node": 1,
     "slurm_additional_parameters": {
-        "clusters": "genius",
+        "clusters": "my-cluster",
         "account": "my-account",
         "cpus_per_gpu": 4,
     },
