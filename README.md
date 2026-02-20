@@ -24,8 +24,7 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 GPU = SlurmArgs(time="02:00:00", partition="gpu_a100", gpus_per_node=1, cpus_per_gpu=18)
 CPU = SlurmArgs(time="01:00:00", partition="batch", cpus_per_task=8)
 
-plan = Plan(
-    "experiment",
+plan = Plan("experiment",
     Chain(
         Step("download", download_data, CPU),
         Step("preprocess", preprocess, CPU),
@@ -83,7 +82,7 @@ Chain(
 )
 ```
 
-You can do stuff like this (not saying you *should*):
+You can declaratively define all experiments you need to run for example:
 
 ```python
 Plan("thesis", Chain(
@@ -92,17 +91,17 @@ Plan("thesis", Chain(
         Chain(
             Step("preprocess_en", preprocess, CPU, "en"),
             Parallel(
-                Step("train_bert", train, GPU, "bert", epochs=10, lr=3e-5),
-                Step("train_roberta", train, GPU, "roberta", epochs=5),
-                Chain(
-                    Step("hyperparam_search", search, GPU, "xlm-r"),
-                    Step("train_xlm-r", train, GPU, "xlm-r"),
-                ),
+                # Gets called as train("en", "clm", epochs=10, lr=3e-5)
+                Step("en_clm", train, GPU, "en", "clm", epochs=10, lr=3e-5),
+                Step("en_mlm", train, GPU, "en", "mlm", epochs=10, lr=3e-5),
             ),
         ),
         Chain(
             Step("preprocess_nl", preprocess, CPU, "nl"),
-            Step("train_nl", train, GPU, "nl"),
+            Parallel(
+                Step("nl_clm", train, GPU, "nl", "clm", epochs=10, lr=3e-5),
+                Step("nl_mlm", train, GPU, "nl", "mlm", epochs=10, lr=3e-5),
+            ),
         ),
     ),
     Step("evaluate_all", evaluate, CPU),
@@ -114,34 +113,85 @@ If we assume `CPU` takes 1 hour and `GPU` 2, this generates the following DAG wi
 
 ```
 Plan: thesis
-└── ▼ Chain [8:00:00]
+└── ▼ Chain [6:00:00]
     ├── ● download_data [01:00:00]
-    ├── ⇉ Parallel [5:00:00]
-    │   ├── ▼ Chain [5:00:00]
+    ├── ⇉ Parallel [3:00:00]
+    │   ├── ▼ Chain [3:00:00]
     │   │   ├── ● preprocess_en [01:00:00]
-    │   │   └── ⇉ Parallel [4:00:00]
-    │   │       ├── ● train_bert [02:00:00]
-    │   │       ├── ● train_roberta [02:00:00]
-    │   │       └── ▼ Chain [4:00:00]
-    │   │           ├── ● hyperparam_search [02:00:00]
-    │   │           └── ● train_xlm-r [02:00:00]
+    │   │   └── ⇉ Parallel [2:00:00]
+    │   │       ├── ● en_clm [02:00:00]
+    │   │       └── ● en_mlm [02:00:00]
     │   └── ▼ Chain [3:00:00]
     │       ├── ● preprocess_nl [01:00:00]
-    │       └── ● train_nl [02:00:00]
+    │       └── ⇉ Parallel [2:00:00]
+    │           ├── ● nl_clm [02:00:00]
+    │           └── ● nl_mlm [02:00:00]
     ├── ● evaluate_all [01:00:00]
     └── ● generate_plots [01:00:00]
-Time Estimate (not taking queuing into account): 8:00:00
+Time Estimate (not taking queuing into account): 6:00:00
 ```
 
-The 8 hours is the critical path:
+The 6 hours is the critical path:
 * `download_data` (1h) +
-* slowest parallel branch (`preprocess_en` 1h + `hyperparam_search` 2h + `train_xlm-r` 2h = 5h) +
+* slowest parallel branch (`preprocess_*` 1h + `train_clm`/`train_mlm` 2h = 3h) +
 * `evaluate_all` (1h) +
 * `generate_plots` (1h)
-* = 8h
+* = 6h
 
 This is of course without any potential queue time or jobs finishing early.
-It's only an estimate of the requested time, taking into account parallel jobs.
+It's only an estimate of the total requested time.
+
+Lastly, you can also programmatically generate parts of the DAG:
+
+```python
+configs = ["small", "medium", "large"]
+
+Plan("grid_search", Chain(
+    Step("prepare", prepare_data, CPU),
+    Parallel(*[Step(f"train_{cfg}", train, GPU, cfg) for cfg in configs]),
+    Step("compare", compare_results, CPU),
+))
+```
+
+Which results in:
+
+```
+Plan: grid_search
+└── ▼ Chain [4:00:00]
+    ├── ● prepare [01:00:00]
+    ├── ⇉ Parallel [2:00:00]
+    │   ├── ● train_small [02:00:00]
+    │   ├── ● train_medium [02:00:00]
+    │   └── ● train_large [02:00:00]
+    └── ● compare [01:00:00]
+Time Estimate (not taking queuing into account): 4:00:00
+```
+
+This can be especially powerful when you have experimental variables that all need to be searched.
+[I](https://wesselpoelman.nl/posts/useful-software-2025-04-17/) like to use `itertools` for this:
+```python
+import itertools
+
+# Experimental variables
+all_vars = [
+    [1, 2, 3],       # first variable
+    ["a", "b", "c"], # second variable
+    [True, False],   # ...
+]
+
+steps = [
+    Step(f"step_{idx}", func, CPU, *exp_args)
+    for idx, exp_args in enumerate(itertools.product(*all_vars))
+]
+
+# This creates Steps that call `func` with:
+#  func(1, 'a', True),
+#  func(1, 'a', False),
+#  func(1, 'b', True),
+#  func(1, 'b', False),
+#  func(1, 'c', True),
+# ...
+```
 
 ### SLURM config
 
@@ -204,13 +254,13 @@ args = {
 Step("train", train_fn, args)
 ```
 
-## Errors and communication
-
-planit only uses `afterok` dependencies: a job only starts if **all** its parents succeeded. If a job fails, SLURM automatically cancels all downstream dependents.
+## Communication and errors
 
 Communication between jobs is expected to happen through the **filesystem**.
 For example, one step writes a checkpoint file and the next step reads it.
 planit does not pass return values between steps; it only manages the dependency graph, slurm args, and submission.
+
+planit only uses `afterok` dependencies: a job only starts if **all** its parents succeeded. If a job fails, SLURM automatically cancels all downstream dependents. If you need to re-run the entire plan, it's up to the step functions to know if something is already done! This is also part of the idea of letting communication happen through the filesystem.
 
 ## Debugging locally
 
