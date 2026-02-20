@@ -29,14 +29,14 @@ def clean_data():
     time.sleep(random.randint(1, 3))
 
 
-def train_model(model_type: str):
-    logger.info(f"Training {model_type}...")
+def train_model(language: str, model_type: str, epochs=10, lr=3e-5):
+    logger.info(f"Training {language} {model_type} ({epochs=}, {lr=})...")
     time.sleep(random.randint(2, 5))
 
 
 def param_search(model_type: str):
     logger.info(f"Searching {model_type}...")
-    time.sleep(random.randint(3, 8))
+    time.sleep(random.randint(3, 6))
 
 
 def plot_results(models: Iterable[str]):
@@ -48,11 +48,11 @@ steps = Chain(
     Step("download", download_data, CPU_ARGS),
     Step("clean_data", clean_data, CPU_ARGS),
     Parallel(
-        Step("train_a", train_model, GPU_ARGS, "model_a"),
-        Step("train_b", train_model, GPU_ARGS, "model_b"),
+        Step("train_a", train_model, GPU_ARGS, "en", "model_a", epochs=2),
+        Step("train_b", train_model, GPU_ARGS, "fr", "model_b", epochs=4, lr=4e-5),
         Chain(
             Step("param_search", param_search, GPU_ARGS, "model_c"),
-            Step("train_c", train_model, GPU_ARGS, "model_c"),
+            Step("train_c", train_model, GPU_ARGS, "am", "model_c"),
         ),
     ),
     Step("plot", plot_results, CPU_ARGS, ("model_a", "model_b", "model_c")),
