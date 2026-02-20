@@ -5,9 +5,9 @@ Declaratively build workflow DAGs for SLURM clusters. Define your pipeline as a 
 ## Installation
 
 ```bash
-uv add planit
+uv add git+https://github.com/WPoelman/planit.git
 # or
-pip install planit
+pip install git+https://github.com/WPoelman/planit.git
 ```
 
 ## Quick start
