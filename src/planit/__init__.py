@@ -1,1 +1,15 @@
-from .planit import MailType, Node, SlurmArgs, Plan, Step, Parallel, Chain  # noqa
+from importlib.metadata import version
+
+from .planit import Chain, MailType, Node, Parallel, Plan, SlurmArgs, Step  # noqa
+
+__version__ = version("planit")
+
+__all__ = [
+    "Chain",
+    "MailType",
+    "Node",
+    "Parallel",
+    "Plan",
+    "SlurmArgs",
+    "Step",
+]
