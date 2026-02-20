@@ -5,9 +5,9 @@ Declaratively build workflow DAGs for SLURM clusters. Define your pipeline as a 
 ## Installation
 
 ```bash
-uv add git+https://github.com/WPoelman/planit.git
+uv add planit
 # or
-pip install git+https://github.com/WPoelman/planit.git
+pip install planit
 ```
 
 ## Quick start
@@ -215,7 +215,7 @@ args = SlurmArgs(
 ```
 
 This is tailored to my own work on the [VSC](https://www.vscentrum.be/) and may not cover all the configurations you might need on your cluster (see the [next section](#raw-dict) for an alternative).
-CPU and GPU configurations I regularly use on the VSC are included in [example_vsc_args.py](example_vsc_args.py).
+CPU and GPU configurations I regularly use on the VSC are included in [example_vsc_args.py](https://github.com/WPoelman/planit/blob/main/example_vsc_args.py).
 
 Available fields:
 
