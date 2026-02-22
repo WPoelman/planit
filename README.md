@@ -26,13 +26,13 @@ CPU = SlurmArgs(time="01:00:00", partition="batch", cpus_per_task=8)
 
 plan = Plan("experiment",
     Chain(
-        Step("download", download_data, CPU),
-        Step("preprocess", preprocess, CPU),
+        Step("download", CPU, download_data),
+        Step("preprocess", CPU, preprocess),
         Parallel(
-            Step("train_model_a", train, GPU, "model_a"),
-            Step("train_model_b", train, GPU, "model_b"),
+            Step("train_model_a", GPU, train, "model_a"),
+            Step("train_model_b", GPU, train, "model_b"),
         ),
-        Step("evaluate", evaluate, CPU),
+        Step("evaluate", CPU, evaluate),
     ),
 )
 
@@ -62,7 +62,7 @@ Time Estimate (not taking queuing into account): 5:00:00
 
 A plan is a tree built from three **`Node`** types:
 
-- **`Step(name, func, slurm_args, *args, **kwargs)`**: a single SLURM job. `func` is called with `*args` and `**kwargs` when the job runs.
+- **`Step(name, slurm_args,  func, *args, **kwargs)`**: a single SLURM job. `func` is called with `*args` and `**kwargs` when the job runs.
 - **`Chain(*nodes)`**: runs children one after another. Each child waits for the previous one to finish (`afterok`).
 - **`Parallel(*nodes)`**: runs children concurrently. All children start after the same parent finishes.
 
@@ -70,15 +70,15 @@ With nesting, these can generate different kinds of workflow DAGs:
 
 ```python
 Chain(
-    Step("setup", setup_fn, CPU), # no arguments for 'setup_fn'
+    Step("setup", CPU, setup_fn), # no arguments for 'setup_fn'
     Parallel(
-        Step("branch_a", work_a, GPU, "config_a"), # 'work_a' will be called as work_a("config_a")
+        Step("branch_a", GPU, work_a, "config_a"), # 'work_a' will be called as work_a("config_a")
         Chain(
-            Step("branch_b_prep", prep_b, CPU, option=1), # prep_b(option=1)
-            Step("branch_b_run", work_b, GPU),
+            Step("branch_b_prep", CPU, prep_b, option=1), # prep_b(option=1)
+            Step("branch_b_run", GPU, work_b),
         ),
     ),
-    Step("aggregate", combine_results, CPU),
+    Step("aggregate", CPU, combine_results),
 )
 ```
 
@@ -86,26 +86,26 @@ You can declaratively define all experiments you need to run for example:
 
 ```python
 Plan("thesis", Chain(
-    Step("download_data", download, CPU),
+    Step("download_data", CPU, download),
     Parallel(
         Chain(
-            Step("preprocess_en", preprocess, CPU, "en"),
+            Step("preprocess_en", CPU, preprocess, "en"),
             Parallel(
                 # Gets called as train("en", "clm", epochs=10, lr=3e-5)
-                Step("en_clm", train, GPU, "en", "clm", epochs=10, lr=3e-5),
-                Step("en_mlm", train, GPU, "en", "mlm", epochs=10, lr=3e-5),
+                Step("en_clm", GPU, train, "en", "clm", epochs=10, lr=3e-5),
+                Step("en_mlm", GPU, train, "en", "mlm", epochs=10, lr=3e-5),
             ),
         ),
         Chain(
-            Step("preprocess_nl", preprocess, CPU, "nl"),
+            Step("preprocess_nl", CPU, preprocess, "nl"),
             Parallel(
-                Step("nl_clm", train, GPU, "nl", "clm", epochs=10, lr=3e-5),
-                Step("nl_mlm", train, GPU, "nl", "mlm", epochs=10, lr=3e-5),
+                Step("nl_clm", GPU, train, "nl", "clm", epochs=10, lr=3e-5),
+                Step("nl_mlm", GPU, train, "nl", "mlm", epochs=10, lr=3e-5),
             ),
         ),
     ),
-    Step("evaluate_all", evaluate, CPU),
-    Step("generate_plots", plot, CPU),
+    Step("evaluate_all", CPU, evaluate),
+    Step("generate_plots", CPU, plot),
 ))
 ```
 
@@ -147,9 +147,9 @@ Lastly, you can also programmatically generate parts of the DAG:
 configs = ["small", "medium", "large"]
 
 Plan("grid_search", Chain(
-    Step("prepare", prepare_data, CPU),
-    Parallel(*[Step(f"train_{cfg}", train, GPU, cfg) for cfg in configs]),
-    Step("compare", compare_results, CPU),
+    Step("prepare", CPU, prepare_data),
+    Parallel(*[Step(f"train_{cfg}", GPU, train, cfg) for cfg in configs]),
+    Step("compare", CPU, compare_results),
 ))
 ```
 
@@ -180,7 +180,7 @@ all_vars = [
 ]
 
 steps = [
-    Step(f"step_{idx}", func, CPU, *exp_args)
+    Step(f"step_{idx}", CPU, func, *exp_args)
     for idx, exp_args in enumerate(itertools.product(*all_vars))
 ]
 
@@ -251,7 +251,7 @@ args = {
         "cpus_per_gpu": 4,
     },
 }
-Step("train", train_fn, args)
+Step("train", args, train_fn)
 ```
 
 ## Communication and errors

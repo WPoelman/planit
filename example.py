@@ -45,17 +45,17 @@ def plot_results(models: Iterable[str]):
 
 
 steps = Chain(
-    Step("download", download_data, CPU_ARGS),
-    Step("clean_data", clean_data, CPU_ARGS),
+    Step("download", CPU_ARGS, download_data),
+    Step("clean_data", CPU_ARGS, clean_data),
     Parallel(
-        Step("train_a", train_model, GPU_ARGS, "en", "model_a", epochs=2),
-        Step("train_b", train_model, GPU_ARGS, "fr", "model_b", epochs=4, lr=4e-5),
+        Step("train_a", GPU_ARGS, train_model, "en", "model_a", epochs=2),
+        Step("train_b", GPU_ARGS, train_model, "fr", "model_b", epochs=4, lr=4e-5),
         Chain(
-            Step("param_search", param_search, GPU_ARGS, "model_c"),
-            Step("train_c", train_model, GPU_ARGS, "am", "model_c"),
+            Step("param_search", GPU_ARGS, param_search, "model_c"),
+            Step("train_c", GPU_ARGS, train_model, "am", "model_c"),
         ),
     ),
-    Step("plot", plot_results, CPU_ARGS, ("model_a", "model_b", "model_c")),
+    Step("plot", CPU_ARGS, plot_results, ("model_a", "model_b", "model_c")),
 )
 
 # The 'cluster' argument here is not necessary when submitting real jobs.

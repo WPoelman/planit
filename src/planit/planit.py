@@ -30,17 +30,17 @@ class SlurmArgs:
     (e.g. "slurm_time", "slurm_partition", "slurm_additional_parameters")
     and must include a "slurm_time" entry for time estimation.
 
-    Example using SlurmArgs::
+    Example using SlurmArgs:
 
-        Step("train", train_fn, SlurmArgs(time="02:00:00", partition="gpu"))
+        Step("train", SlurmArgs(time="02:00:00", partition="gpu"), train_fn)
 
-    Example using a raw dict::
-
-        Step("train", train_fn, {
+    Example using a raw dict:
+        slurm_args =  {
             "slurm_time": "02:00:00",
             "slurm_partition": "gpu_v100",
             "slurm_additional_parameters": {"account": "my-account", ...},
-        })
+        }
+        Step("train", slurm_args, train_fn)
     """
 
     time: str  # 'HH:MM:SS', 'MM:SS' or 'days-HH:MM:SS'
@@ -113,8 +113,8 @@ class Step(Node):
     def __init__(
         self,
         name: str,
-        func: Callable[..., object],
         slurm_args: SlurmArgs | dict[str, Any],
+        func: Callable[..., object],
         /,
         *args: object,
         **kwargs: object,
@@ -122,14 +122,18 @@ class Step(Node):
         """
         A Step corresponds to a single function executed as a job by SLURM.
 
+        The order of the arguments here should read as:
+        "the job named 'name', requires resources 'slurm_args'
+         and runs the function 'abc' with 'args' and 'kwargs'..."
+
         name:
             Name of this step.
-        func:
-            The function that will be executed as a SLURM job.
         slurm_args:
             SLURM parameters for the job. Either a SlurmArgs instance or a raw
             dict of submitit-compatible parameters. A raw dict must include
             "slurm_time" for time estimation.
+        func:
+            The function that will be executed as a SLURM job.
         *args:
             Positional arguments passed to `func` when the job executes.
         **kwargs:
