@@ -181,7 +181,7 @@ class Plan:
         child_prefix: str = prefix + ("    " if is_last else "│   ")
 
         if isinstance(node, Step):
-            logger.info(f"{prefix}{marker}● {node.name} [{node._get_time()}]")
+            logger.info(f"{prefix}{marker}● {node.name} [{node.get_duration()}]")
         elif isinstance(node, Parallel):
             logger.info(f"{prefix}{marker}⇉ Parallel [{node.get_duration()}]")
             for i, n in enumerate(node.nodes):

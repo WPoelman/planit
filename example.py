@@ -16,7 +16,7 @@ logger = logging.getLogger("planit")
 logger.setLevel(logging.INFO)
 
 CPU_ARGS = SlurmArgs(time="01:00:00", partition="cpu", cpus_per_task=8)
-GPU_ARGS = SlurmArgs(time="01:00:00", partition="gpu", gpus_per_node=4, cpus_per_task=16)
+GPU_ARGS = SlurmArgs(time="02:00:00", partition="gpu", gpus_per_node=4, cpus_per_task=16)
 
 
 def download_data():
