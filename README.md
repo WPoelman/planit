@@ -10,6 +10,8 @@ uv add git+https://github.com/WPoelman/planit.git
 pip install git+https://github.com/WPoelman/planit.git
 ```
 
+> As an aside, someone is name-squatting `planit` on PyPi. I [requested](https://github.com/pypi/support/issues/9415) a transfer...
+
 ## Quick start
 
 ```python
