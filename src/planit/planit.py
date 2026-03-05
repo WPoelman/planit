@@ -22,10 +22,11 @@ class MailType(StrEnum):
 @dataclass
 class SlurmArgs:
     """
-    Convenience wrapper for common VSC SLURM parameters.
+    Convenience wrapper for common SLURM parameters. Note that this is tailored
+    to work on the VSC (Flemish Supercomputer).
 
-    These args are cluster-specific and may not cover all configurations. If your
-    cluster requires different parameters, you can pass a raw dict directly
+    These args are somewhat cluster-specific and may not cover all configurations.
+    If your cluster requires different parameters, you can pass a raw dict directly
     to Step instead. The dict should contain submitit-compatible keys
     (e.g. "slurm_time", "slurm_partition", "slurm_additional_parameters")
     and must include a "slurm_time" entry for time estimation.
@@ -35,6 +36,7 @@ class SlurmArgs:
         Step("train", SlurmArgs(time="02:00:00", partition="gpu"), train_fn)
 
     Example using a raw dict:
+
         slurm_args =  {
             "slurm_time": "02:00:00",
             "slurm_partition": "gpu_v100",
@@ -75,7 +77,7 @@ class SlurmArgs:
         if self.account is not None:
             additional["account"] = self.account
         if self.cluster is not None:
-            # NOTE: this is indeed plural on VSC!
+            # NOTE: this is indeed plural on the VSC!
             additional["clusters"] = self.cluster
         if self.mail_type:
             additional["mail_type"] = ",".join(self.mail_type)
@@ -123,8 +125,8 @@ class Step(Node):
         A Step corresponds to a single function executed as a job by SLURM.
 
         The order of the arguments here should read as:
-        "the job named 'name', requires resources 'slurm_args'
-         and runs the function 'abc' with 'args' and 'kwargs'..."
+            "the job named 'name', requires resources 'slurm_args'
+             and runs the function 'func' that is called with 'args' and 'kwargs'..."
 
         name:
             Name of this step.
@@ -271,7 +273,7 @@ class Plan:
 
 
 def _parse_slurm_time(time_str: str) -> datetime.timedelta:
-    """Parses 'HH:MM:SS', 'MM:SS' or 'days-HH:MM:SS'."""
+    """Parses 'HH:MM:SS', 'MM:SS' or 'days-HH:MM:SS' into 'datetime.timedelta'."""
     try:
         if "-" in time_str:
             days, rest = time_str.split("-")
