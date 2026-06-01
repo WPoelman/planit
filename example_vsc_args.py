@@ -5,8 +5,9 @@ The cpu counts for GPU partitions are *not* arbitrary, these are required per no
 The counts for the batch jobs are the max.
 
 See:
-- https://docs.vscentrum.be/leuven/tier2_hardware/wice_hardware.html
-- https://docs.vscentrum.be/leuven/tier2_hardware/mindwell_hardware.html
+    - https://docs.vscentrum.be/leuven/tier2_hardware/wice_hardware.html
+    - https://docs.vscentrum.be/leuven/tier2_hardware/mindwell_hardware.html
+    - https://docs.vscentrum.be/leuven/slurm_specifics.html#cpu-resource-limits-in-gpu-jobs (for CPU per GPU counts)
 
 Make sure to fill in "account" and "mail_user" with actual values!
 """
