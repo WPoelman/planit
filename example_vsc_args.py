@@ -1,10 +1,12 @@
 """
-Example planit configurations for VSC clusters (Wice / Genius).
+Example planit configurations for VSC clusters (wICE / Mindwell).
 
 The cpu counts for GPU partitions are *not* arbitrary, these are required per node.
 The counts for the batch jobs are the max.
 
-See: https://docs.vscentrum.be/leuven/tier2_hardware.html
+See:
+- https://docs.vscentrum.be/leuven/tier2_hardware/wice_hardware.html
+- https://docs.vscentrum.be/leuven/tier2_hardware/mindwell_hardware.html
 
 Make sure to fill in "account" and "mail_user" with actual values!
 """
@@ -57,23 +59,13 @@ WICE_A100_DEBUG = SlurmArgs(
     mail_type=MAIL,
 )
 
-GENIUS_BATCH = SlurmArgs(
+MINDWELL_B200 = SlurmArgs(
     time="01:00:00",
-    partition="batch",
-    cpus_per_task=36,
-    account="my-hpc-account",
-    cluster="genius",
-    mail_user="me@uni.edu",
-    mail_type=MAIL,
-)
-
-GENIUS_V100 = SlurmArgs(
-    time="01:00:00",
-    partition="gpu_v100",
+    partition="gpu_b200",
     gpus_per_node=1,
-    cpus_per_gpu=4,
+    cpus_per_gpu=24,
     account="my-hpc-account",
-    cluster="genius",
+    cluster="mindwell",
     mail_user="me@uni.edu",
     mail_type=MAIL,
 )
