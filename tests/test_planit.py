@@ -2,11 +2,20 @@ import datetime
 
 import pytest
 
-from planit import Chain, MailType, Parallel, SlurmArgs, Step
+from planit import Chain, MailType, Node, Parallel, SlurmArgs, Step
+from planit.planit import _normalize_nodes
 
 
 def noop():
     pass
+
+
+def step_names(nodes: list[Node]) -> list[str]:
+    names: list[str] = []
+    for node in nodes:
+        assert isinstance(node, Step)
+        names.append(node.name)
+    return names
 
 
 def test_parse_time_hh_mm_ss():
@@ -87,6 +96,55 @@ def test_parallel_duration_is_max():
         Step("b", SlurmArgs(time="02:00:00", partition="batch"), noop),
     )
     assert par.get_duration() == datetime.timedelta(hours=2)
+
+
+def test_parallel_accepts_generator():
+    durations = ["01:00:00", "02:00:00", "00:30:00"]
+    par = Parallel(
+        Step(f"s_{i}", SlurmArgs(time=duration, partition="batch"), noop) for i, duration in enumerate(durations)
+    )
+
+    assert step_names(par.nodes) == ["s_0", "s_1", "s_2"]
+    assert par.get_duration() == datetime.timedelta(hours=2)
+
+
+def test_parallel_accepts_list():
+    par = Parallel(
+        [
+            Step("a", SlurmArgs(time="01:00:00", partition="batch"), noop),
+            Step("b", SlurmArgs(time="02:00:00", partition="batch"), noop),
+        ]
+    )
+
+    assert step_names(par.nodes) == ["a", "b"]
+    assert par.get_duration() == datetime.timedelta(hours=2)
+
+
+def test_chain_accepts_generator():
+    durations = ["01:00:00", "00:30:00"]
+    chain = Chain(
+        Step(f"s_{i}", SlurmArgs(time=duration, partition="batch"), noop) for i, duration in enumerate(durations)
+    )
+
+    assert step_names(chain.nodes) == ["s_0", "s_1"]
+    assert chain.get_duration() == datetime.timedelta(hours=1, minutes=30)
+
+
+def test_chain_accepts_list():
+    chain = Chain(
+        [
+            Step("a", SlurmArgs(time="01:00:00", partition="batch"), noop),
+            Step("b", SlurmArgs(time="00:30:00", partition="batch"), noop),
+        ]
+    )
+
+    assert step_names(chain.nodes) == ["a", "b"]
+    assert chain.get_duration() == datetime.timedelta(hours=1, minutes=30)
+
+
+def test_node_groups_reject_non_nodes():
+    with pytest.raises(TypeError, match="Expected Node, got str"):
+        _normalize_nodes(("not-a-node",))
 
 
 def test_nested_duration():

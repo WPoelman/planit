@@ -155,6 +155,19 @@ Plan("grid_search", Chain(
 ))
 ```
 
+`Chain` and `Parallel` accept either multiple nodes directly, or any single iterable of nodes. These are all valid:
+
+```python
+Parallel(
+    Step("train_small", GPU, train, "small"),
+    Step("train_large", GPU, train, "large"),
+)
+
+Parallel([Step(f"train_{cfg}", GPU, train, cfg) for cfg in configs])
+
+Parallel(Step(f"train_{cfg}", GPU, train, cfg) for cfg in configs)
+```
+
 Which results in:
 
 ```

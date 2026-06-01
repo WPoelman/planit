@@ -1,9 +1,10 @@
 import datetime
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Callable
+from typing import Any, Callable, overload
 
 import submitit
 
@@ -95,17 +96,43 @@ class Node(ABC):
     def get_duration(self) -> datetime.timedelta: ...
 
 
+def _normalize_nodes(nodes: tuple[object, ...]) -> list[Node]:
+    if len(nodes) == 1 and not isinstance(nodes[0], Node) and isinstance(nodes[0], Iterable):
+        candidates: Iterable[object] = nodes[0]
+    else:
+        candidates = nodes
+
+    normalized: list[Node] = []
+    for node in candidates:
+        if not isinstance(node, Node):
+            raise TypeError(f"Expected Node, got {type(node).__name__}")
+        normalized.append(node)
+    return normalized
+
+
 class Parallel(Node):
-    def __init__(self, *nodes: Node) -> None:
-        self.nodes: list[Node] = list(nodes)
+    @overload
+    def __init__(self, nodes: Iterable[Node], /) -> None: ...
+
+    @overload
+    def __init__(self, *nodes: Node) -> None: ...
+
+    def __init__(self, *nodes: object) -> None:
+        self.nodes: list[Node] = _normalize_nodes(nodes)
 
     def get_duration(self) -> datetime.timedelta:
         return max((n.get_duration() for n in self.nodes), default=datetime.timedelta(0))
 
 
 class Chain(Node):
-    def __init__(self, *nodes: Node) -> None:
-        self.nodes: list[Node] = list(nodes)
+    @overload
+    def __init__(self, nodes: Iterable[Node], /) -> None: ...
+
+    @overload
+    def __init__(self, *nodes: Node) -> None: ...
+
+    def __init__(self, *nodes: object) -> None:
+        self.nodes: list[Node] = _normalize_nodes(nodes)
 
     def get_duration(self) -> datetime.timedelta:
         return sum((n.get_duration() for n in self.nodes), datetime.timedelta(0))
